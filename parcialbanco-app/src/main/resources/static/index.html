@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ParcialBanco · Private Banking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --obsidian:#070708; --ink:#0c0c0f; --panel:rgba(255,255,255,.035); --panel-2:rgba(255,255,255,.06);
+  --line:rgba(255,255,255,.09); --gold:#c9a961; --gold-soft:rgba(201,169,97,.38); --gold-faint:rgba(201,169,97,.16);
+  --text:#f4f2ee; --muted:#9a9aa3; --dim:#64646d; --ok:#8fd3a8; --bad:#e58a8a;
+  --radius:18px; --font:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--obsidian);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden;
+  background-image:radial-gradient(900px 500px at 85% -10%,rgba(201,169,97,.07),transparent 60%),radial-gradient(700px 500px at -10% 110%,rgba(255,255,255,.04),transparent 60%);
+  background-attachment:fixed}
+button,input{font-family:inherit;color:inherit}
+.hidden{display:none!important}
+.gold{color:var(--gold)}
+.eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.muted{color:var(--muted)}
+
+/* ---------- glass ---------- */
+.glass{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);position:relative}
+.glass.edge::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:linear-gradient(135deg,var(--gold-soft),transparent 38%,transparent 62%,var(--gold-faint));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+
+/* ---------- controls ---------- */
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:500;letter-spacing:.02em}
+input[type=text],input[type=email],input[type=password],input[type=tel],input[type=number]{
+  width:100%;background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus{border-color:var(--gold-soft);box-shadow:0 0 0 4px var(--gold-faint)}
+input::placeholder{color:var(--dim)}
+.field{margin-bottom:18px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.btn{border:1px solid var(--line);background:transparent;border-radius:12px;padding:14px 22px;font-size:14px;font-weight:600;cursor:pointer;transition:transform .15s,background .2s,border-color .2s,opacity .2s}
+.btn:hover{border-color:var(--gold-soft);background:var(--panel-2)}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:#f4f2ee;color:#0a0a0c;border-color:#f4f2ee;box-shadow:0 0 0 3px var(--gold-faint)}
+.btn.primary:hover{background:#fff;border-color:var(--gold)}
+.btn.block{width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:8px 14px;font-size:12.5px;color:var(--muted);cursor:pointer;transition:.2s}
+.chip:hover{border-color:var(--gold-soft);color:var(--text)}
+
+/* ---------- auth ---------- */
+#auth{min-height:100vh;display:grid;grid-template-columns:1.05fr .95fr}
+.hero{padding:56px 64px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid var(--line);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-180px;top:50%;width:520px;height:520px;transform:translateY(-50%);border:1px solid var(--gold-faint);border-radius:50%;box-shadow:inset 0 0 0 60px transparent,0 0 0 60px rgba(201,169,97,.025),0 0 0 120px rgba(201,169,97,.018)}
+.brand{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:.06em}
+.mark{width:34px;height:34px;border:1px solid var(--gold);border-radius:10px;display:grid;place-items:center;font-size:15px;color:var(--gold);font-weight:800}
+.hero h1{font-size:clamp(34px,4.4vw,58px);line-height:1.04;font-weight:300;letter-spacing:-.025em;max-width:520px;position:relative;z-index:1}
+.hero h1 b{font-weight:700}
+.hero p{color:var(--muted);max-width:440px;margin-top:22px;line-height:1.65;font-size:15px;position:relative;z-index:1}
+.hero-foot{display:flex;gap:34px;color:var(--muted);font-size:12.5px;position:relative;z-index:1}
+.hero-foot span b{display:block;color:var(--text);font-size:20px;font-weight:600;margin-bottom:2px}
+.auth-side{display:grid;place-items:center;padding:36px}
+.auth-card{width:100%;max-width:430px;padding:36px}
+.tabs-auth{display:flex;gap:4px;border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:28px}
+.tabs-auth button{flex:1;border:0;background:transparent;padding:11px;border-radius:9px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;transition:.2s}
+.tabs-auth button.on{background:var(--panel-2);color:var(--text);box-shadow:inset 0 0 0 1px var(--gold-faint)}
+.auth-card h2{font-size:24px;font-weight:600;letter-spacing:-.01em;margin-bottom:6px}
+.auth-card .sub{color:var(--muted);font-size:13.5px;margin-bottom:26px;line-height:1.5}
+.note{font-size:12px;color:var(--dim);line-height:1.5;margin-top:14px}
+
+/* ---------- app shell ---------- */
+#app{min-height:100vh;display:grid;grid-template-columns:250px 1fr}
+aside{border-right:1px solid var(--line);padding:28px 20px;display:flex;flex-direction:column;gap:30px;position:sticky;top:0;height:100vh;background:rgba(7,7,8,.6);backdrop-filter:blur(14px)}
+nav{display:flex;flex-direction:column;gap:4px}
+nav button{display:flex;align-items:center;gap:12px;border:1px solid transparent;background:transparent;text-align:left;padding:12px 14px;border-radius:12px;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:.2s}
+nav button svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
+nav button:hover{color:var(--text);background:var(--panel)}
+nav button.on{color:var(--text);background:var(--panel);border-color:var(--gold-faint)}
+nav button.on svg{stroke:var(--gold)}
+.side-user{margin-top:auto;border-top:1px solid var(--line);padding-top:20px;font-size:13px}
+.side-user .name{font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.side-user .mail{color:var(--muted);font-size:12px;margin-bottom:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+main{padding:40px 48px 60px;max-width:1120px;width:100%}
+.page-head{margin-bottom:30px}
+.page-head h2{font-size:28px;font-weight:600;letter-spacing:-.02em;margin-top:8px}
+.page-head p{color:var(--muted);margin-top:6px;font-size:14px}
+.panel{display:none;animation:rise .45s cubic-bezier(.2,.8,.2,1)}
+.panel.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.grid{display:grid;gap:20px}
+.g-2{grid-template-columns:1.35fr 1fr}
+.pad{padding:28px}
+
+/* ---------- balance ---------- */
+.balance{padding:34px;overflow:hidden}
+.balance .amount{font-size:clamp(36px,5vw,56px);font-weight:300;letter-spacing:-.03em;margin:14px 0 6px;font-variant-numeric:tabular-nums}
+.balance .amount small{font-size:.38em;color:var(--muted);margin-left:8px;letter-spacing:.1em}
+.acct{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12.5px;margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
+.acct b{color:var(--text);font-weight:600;letter-spacing:.12em}
+.meter{height:6px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;margin:16px 0 10px}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,rgba(255,255,255,.55),#fff);border-radius:99px;transition:width .9s cubic-bezier(.2,.8,.2,1);box-shadow:0 0 12px rgba(255,255,255,.35)}
+.meter.warn i{background:linear-gradient(90deg,var(--gold),#e8d29a)}
+.kv{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:8px}
+.kv b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
+.quick button{padding:18px 10px;border:1px solid var(--line);background:var(--panel);border-radius:14px;cursor:pointer;font-size:13px;color:var(--muted);transition:.2s;display:flex;flex-direction:column;gap:10px;align-items:center}
+.quick button svg{width:20px;height:20px;stroke:var(--gold);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.quick button:hover{color:var(--text);border-color:var(--gold-soft);transform:translateY(-2px)}
+
+/* ---------- movimientos ---------- */
+.mov{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+.mov:last-child{border-bottom:0}
+.mov .ico{width:38px;height:38px;border-radius:12px;border:1px solid var(--line);display:grid;place-items:center;flex:none}
+.mov .ico svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.mov.dep .ico{color:var(--ok)} .mov.ret .ico{color:var(--text)}
+.mov .d{flex:1;min-width:0}
+.mov .d div{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mov .d span{font-size:12px;color:var(--muted)}
+.mov .m{font-weight:600;font-variant-numeric:tabular-nums;text-align:right;font-size:14px}
+.mov .m span{display:block;font-size:11.5px;color:var(--dim);font-weight:400;margin-top:2px}
+.mov.dep .m b{color:var(--ok)}
+.empty{color:var(--muted);font-size:14px;text-align:center;padding:36px 0}
+
+/* ---------- cajero ---------- */
+.atm{padding:0;overflow:hidden}
+.atm-screen{padding:30px;border-bottom:1px solid var(--line);min-height:210px;background:linear-gradient(180deg,rgba(255,255,255,.03),transparent)}
+.atm-screen .big{font-size:42px;font-weight:300;letter-spacing:-.02em;margin:10px 0 6px;font-variant-numeric:tabular-nums}
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px}
+.rules div{font-size:11.5px;color:var(--muted);border:1px solid var(--line);border-radius:12px;padding:12px;line-height:1.45}
+.rules b{display:block;color:var(--text);font-size:13px;margin-bottom:3px;font-weight:600}
+.atm-slot{height:46px;background:#020203;border-top:1px solid var(--gold-soft);border-bottom:1px solid var(--line);position:relative;display:flex;align-items:center;justify-content:center}
+.atm-slot::before{content:"";width:68%;height:8px;border-radius:99px;background:#000;box-shadow:inset 0 2px 6px rgba(0,0,0,.9),0 0 0 1px var(--gold-faint)}
+.atm-slot.active::before{box-shadow:inset 0 2px 6px rgba(0,0,0,.9),0 0 0 1px var(--gold),0 0 22px var(--gold-faint)}
+.atm-tray{padding:26px 30px 30px;min-height:150px}
+.denoms{display:flex;flex-direction:column;gap:20px}
+.denom-row{display:flex;align-items:center;gap:20px;opacity:0;animation:rise .5s forwards}
+.fan{position:relative;height:74px;flex:none}
+.bill{position:absolute;top:0;width:150px;height:70px;border-radius:9px;border:1px solid var(--gold-soft);display:flex;align-items:center;justify-content:space-between;padding:0 14px;overflow:hidden;
+  box-shadow:0 8px 18px rgba(0,0,0,.55);opacity:0;animation:dispense .75s cubic-bezier(.18,.9,.25,1.12) forwards}
+.bill::before{content:"";position:absolute;inset:6px;border:1px solid rgba(255,255,255,.14);border-radius:5px;pointer-events:none}
+.bill::after{content:"";position:absolute;right:-26px;top:50%;width:72px;height:72px;transform:translateY(-50%);border-radius:50%;border:1px solid rgba(255,255,255,.12);box-shadow:0 0 0 10px rgba(255,255,255,.03)}
+.bill .v{font-size:19px;font-weight:700;letter-spacing:-.01em;position:relative;z-index:1}
+.bill .c{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);position:relative;z-index:1;text-align:right;line-height:1.5}
+.b100{background:linear-gradient(135deg,#1d1d22,#0e0e12)}
+.b50{background:linear-gradient(135deg,#26262c,#131317)}
+.b20{background:linear-gradient(135deg,#31313a,#18181d)}
+.b10{background:linear-gradient(135deg,#3b3b45,#1d1d23)}
+@keyframes dispense{0%{opacity:0;transform:translateY(-80px) rotate(-6deg) scale(.92)}60%{opacity:1}100%{opacity:1;transform:translateY(0) rotate(var(--rot,0deg))}}
+.denom-info{display:flex;flex-direction:column;gap:2px}
+.denom-info b{font-size:22px;font-weight:600}
+.denom-info span{font-size:12.5px;color:var(--muted)}
+.dispense-total{display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:20px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.dispense-total b{color:var(--text);font-size:16px}
+.reason{border:1px solid rgba(229,138,138,.35);background:rgba(229,138,138,.06);border-radius:14px;padding:16px 18px;display:flex;gap:12px;font-size:14px;line-height:1.55;animation:shake .45s}
+.reason svg{width:20px;height:20px;flex:none;stroke:var(--bad);fill:none;stroke-width:1.8;margin-top:1px}
+.reason strong{display:block;color:var(--bad);font-size:12px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px}
+@keyframes shake{20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+.idle{color:var(--muted);font-size:14px;display:flex;gap:12px;align-items:center}
+.idle i{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px var(--gold-faint);animation:pulse 1.8s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px transparent}}
+
+/* ---------- PIN modal ---------- */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);display:grid;place-items:center;z-index:50;padding:20px;animation:fade .25s}
+@keyframes fade{from{opacity:0}}
+.modal{width:100%;max-width:360px;padding:32px;text-align:center;animation:rise .35s cubic-bezier(.2,.8,.2,1);background:rgba(14,14,17,.92)}
+.modal h3{font-size:20px;font-weight:600;margin:8px 0 6px}
+.modal p{font-size:13.5px;color:var(--muted);line-height:1.5}
+.dots{display:flex;justify-content:center;gap:16px;margin:26px 0}
+.dots i{width:14px;height:14px;border-radius:50%;border:1px solid var(--gold-soft);transition:.15s}
+.dots i.f{background:#fff;border-color:#fff;box-shadow:0 0 12px rgba(255,255,255,.5);transform:scale(1.1)}
+.dots.err{animation:shake .4s}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.keypad button{height:56px;border-radius:14px;border:1px solid var(--line);background:var(--panel);font-size:20px;font-weight:500;cursor:pointer;transition:.15s}
+.keypad button:hover{border-color:var(--gold-soft);background:var(--panel-2)}
+.keypad button:active{transform:scale(.94)}
+.keypad .ghost{font-size:12px;color:var(--muted);letter-spacing:.06em}
+.modal .actions{display:flex;gap:10px;margin-top:20px}
+.modal .actions .btn{flex:1;padding:13px}
+
+/* ---------- toasts ---------- */
+#toasts{position:fixed;top:22px;right:22px;display:flex;flex-direction:column;gap:10px;z-index:100;max-width:380px}
+.toast{background:rgba(16,16,19,.94);border:1px solid var(--line);border-left:2px solid var(--gold);border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.5;backdrop-filter:blur(14px);box-shadow:0 14px 40px rgba(0,0,0,.5);animation:toastIn .4s cubic-bezier(.2,.8,.2,1);display:flex;gap:10px}
+.toast.ok{border-left-color:var(--ok)} .toast.err{border-left-color:var(--bad)}
+.toast b{display:block;font-size:13px;margin-bottom:2px}
+.toast.out{animation:toastOut .3s forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(30px)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(30px)}}
+
+.mobile-top{display:none}
+@media(max-width:960px){
+  #auth{grid-template-columns:1fr}.hero{display:none}
+  #app{grid-template-columns:1fr}
+  aside{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;flex-direction:row;padding:8px;z-index:20;border-right:0;border-top:1px solid var(--line);background:rgba(7,7,8,.92)}
+  aside .brand,.side-user{display:none}
+  nav{flex-direction:row;width:100%;justify-content:space-around}
+  nav button{flex-direction:column;gap:4px;font-size:10px;padding:8px 6px}
+  main{padding:22px 18px 110px}
+  .mobile-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+  .g-2{grid-template-columns:1fr}.rules{grid-template-columns:1fr}
+  .row2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div id="toasts"></div>
+
+<!-- ================= AUTENTICACION ================= -->
+<section id="auth">
+  <div class="hero">
+    <div class="brand"><div class="mark">P</div><span>PARCIALBANCO</span></div>
+    <div>
+      <div class="eyebrow" style="margin-bottom:22px">Private Banking</div>
+      <h1>Tu dinero, <b>bajo control</b> y sin filas.</h1>
+      <p>Consulta tu saldo, deposita y retira efectivo desde un cajero inteligente que valida tu PIN, respeta tu tope diario y entrega siempre la menor cantidad de billetes.</p>
+    </div>
+    <div class="hero-foot">
+      <span><b>$1.000.000</b>tope diario</span>
+      <span><b>4 dígitos</b>PIN transaccional</span>
+      <span><b>$10.000</b>retiro mínimo</span>
+    </div>
+  </div>
+  <div class="auth-side">
+    <div class="glass edge auth-card">
+      <div class="tabs-auth">
+        <button id="tabLogin" class="on" type="button">Ingresar</button>
+        <button id="tabReg" type="button">Crear cuenta</button>
+      </div>
+
+      <form id="formLogin" novalidate>
+        <h2>Bienvenido de vuelta</h2>
+        <p class="sub">Ingresa con tu correo y tu clave de acceso.</p>
+        <div class="field"><label for="lgCorreo">Correo electrónico</label><input id="lgCorreo" type="email" autocomplete="username" placeholder="nombre@correo.com"></div>
+        <div class="field"><label for="lgClave">Clave de acceso</label><input id="lgClave" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+        <button class="btn primary block" type="submit" id="btnLogin">Ingresar</button>
+      </form>
+
+      <form id="formReg" class="hidden" novalidate>
+        <h2>Abre tu cuenta</h2>
+        <p class="sub">Empiezas con un saldo inicial de <span class="gold">$2.000.000 COP</span>.</p>
+        <div class="field"><label for="rgNombre">Nombre completo</label><input id="rgNombre" type="text" autocomplete="name"></div>
+        <div class="field"><label for="rgCorreo">Correo electrónico</label><input id="rgCorreo" type="email" autocomplete="email"></div>
+        <div class="row2">
+          <div class="field"><label for="rgTel">Teléfono</label><input id="rgTel" type="tel" autocomplete="tel"></div>
+          <div class="field"><label for="rgDir">Dirección</label><input id="rgDir" type="text" autocomplete="street-address"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="rgClave">Clave de acceso</label><input id="rgClave" type="password" autocomplete="new-password" placeholder="Mín. 6 caracteres"></div>
+          <div class="field"><label for="rgPin">PIN del cajero</label><input id="rgPin" type="password" inputmode="numeric" maxlength="4" placeholder="4 dígitos" autocomplete="off"></div>
+        </div>
+        <button class="btn primary block" type="submit" id="btnReg">Crear cuenta</button>
+        <p class="note">Tu PIN de 4 dígitos será exigido en cada retiro. Guárdalo bien: no se puede consultar después.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ================= APLICACION ================= -->
+<section id="app" class="hidden">
+  <aside>
+    <div class="brand"><div class="mark">P</div><span>PARCIALBANCO</span></div>
+    <nav id="nav">
+      <button data-tab="resumen" class="on"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Resumen</button>
+      <button data-tab="deposito"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>Depósito</button>
+      <button data-tab="cajero"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M7 20h10M12 16v4M7 9h5"/></svg>Cajero</button>
+      <button data-tab="movimientos"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg>Movimientos</button>
+      <button data-tab="perfil"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Perfil</button>
+      <button data-tab="seguridad"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>Seguridad</button>
+    </nav>
+    <div class="side-user">
+      <div class="name" id="sbNombre">—</div>
+      <div class="mail" id="sbCorreo">—</div>
+      <button class="btn block" id="btnLogout" type="button" style="padding:11px">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main>
+    <div class="mobile-top"><div class="brand"><div class="mark">P</div><span>PARCIALBANCO</span></div><button class="btn" id="btnLogoutM" style="padding:9px 14px;font-size:12px">Salir</button></div>
+
+    <!-- RESUMEN -->
+    <div class="panel on" id="p-resumen">
+      <div class="page-head"><div class="eyebrow">Resumen</div><h2 id="saludo">Hola</h2><p>Tu posición financiera en tiempo real.</p></div>
+      <div class="grid g-2">
+        <div class="glass edge balance">
+          <div class="eyebrow">Saldo disponible</div>
+          <div class="amount" id="saldoBig">$0<small>COP</small></div>
+          <div class="muted" style="font-size:13px">Actualizado al instante tras cada operación.</div>
+          <div class="acct"><span>Cuenta</span><b id="nroCuenta">0000</b></div>
+        </div>
+        <div class="glass pad">
+          <div class="eyebrow">Tope diario de retiros</div>
+          <div class="meter" id="meter"><i id="meterFill"></i></div>
+          <div class="kv"><span>Retirado hoy</span><b id="kvRet">$0</b></div>
+          <div class="kv"><span>Disponible hoy</span><b id="kvDisp">$0</b></div>
+          <div class="kv"><span>Tope máximo</span><b id="kvTope">$0</b></div>
+        </div>
+      </div>
+      <div class="quick">
+        <button data-go="deposito"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>Depositar</button>
+        <button data-go="cajero"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M7 20h10M12 16v4"/></svg>Retirar</button>
+        <button data-go="perfil"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Mis datos</button>
+      </div>
+      <div class="glass pad" style="margin-top:20px">
+        <div class="eyebrow" style="margin-bottom:8px">Últimos movimientos</div>
+        <div id="recientes"></div>
+      </div>
+    </div>
+
+    <!-- DEPOSITO -->
+    <div class="panel" id="p-deposito">
+      <div class="page-head"><div class="eyebrow">Depósito</div><h2>Ingresar fondos</h2><p>El valor se suma de inmediato a tu saldo disponible.</p></div>
+      <div class="grid" style="max-width:520px">
+        <form class="glass edge pad" id="formDep" novalidate>
+          <div class="field"><label for="depMonto">Monto a depositar (COP)</label><input id="depMonto" type="number" min="1" step="1" inputmode="numeric" placeholder="0"></div>
+          <div class="chips" id="chipsDep" style="margin:-4px 0 22px"></div>
+          <button class="btn primary block" type="submit" id="btnDep">Confirmar depósito</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- CAJERO -->
+    <div class="panel" id="p-cajero">
+      <div class="page-head"><div class="eyebrow">Cajero inteligente</div><h2>Retirar efectivo</h2><p>Billetes de $100.000, $50.000, $20.000 y $10.000.</p></div>
+      <div class="grid g-2">
+        <div class="glass edge atm">
+          <div class="atm-screen">
+            <div class="eyebrow">Monto a retirar</div>
+            <div class="big" id="atmMonto">$0</div>
+            <div class="muted" style="font-size:12.5px" id="atmHint">Elige un valor o escríbelo a la derecha.</div>
+            <div class="rules">
+              <div><b>Mínimo</b>$10.000 por retiro</div>
+              <div><b>Tope diario</b>$1.000.000 acumulado</div>
+              <div><b>Múltiplos</b>de $10.000 exactos</div>
+            </div>
+          </div>
+          <div class="atm-slot" id="atmSlot"></div>
+          <div class="atm-tray" id="atmTray"><div class="idle"><i></i>Cajero listo. Esperando una solicitud de retiro.</div></div>
+        </div>
+        <form class="glass pad" id="formRet" novalidate style="align-self:start">
+          <div class="field"><label for="retMonto">Monto (COP)</label><input id="retMonto" type="number" min="0" step="10000" inputmode="numeric" placeholder="Ej. 180000"></div>
+          <div class="chips" id="chipsRet" style="margin:-4px 0 22px"></div>
+          <button class="btn primary block" type="submit" id="btnRet">Continuar con PIN</button>
+          <p class="note">Te pediremos tu PIN de 4 dígitos antes de procesar el retiro.</p>
+        </form>
+      </div>
+    </div>
+
+    <!-- MOVIMIENTOS -->
+    <div class="panel" id="p-movimientos">
+      <div class="page-head"><div class="eyebrow">Historial</div><h2>Movimientos</h2><p>Depósitos y retiros de tu cuenta, del más reciente al más antiguo.</p></div>
+      <div class="glass pad" id="listaMov"></div>
+    </div>
+
+    <!-- PERFIL -->
+    <div class="panel" id="p-perfil">
+      <div class="page-head"><div class="eyebrow">Perfil</div><h2>Datos personales</h2><p>Actualiza tu información de contacto.</p></div>
+      <form class="glass edge pad" id="formPerfil" novalidate style="max-width:560px">
+        <div class="field"><label>Titular</label><input id="pfNombre" type="text" disabled></div>
+        <div class="field"><label for="pfCorreo">Correo electrónico</label><input id="pfCorreo" type="email"></div>
+        <div class="row2">
+          <div class="field"><label for="pfTel">Teléfono</label><input id="pfTel" type="tel"></div>
+          <div class="field"><label for="pfDir">Dirección</label><input id="pfDir" type="text"></div>
+        </div>
+        <button class="btn primary" type="submit" id="btnPerfil">Guardar cambios</button>
+      </form>
+    </div>
+
+    <!-- SEGURIDAD -->
+    <div class="panel" id="p-seguridad">
+      <div class="page-head"><div class="eyebrow">Seguridad</div><h2>Clave de acceso</h2><p>Cámbiala cuando lo necesites. Tu PIN de cajero permanece igual.</p></div>
+      <form class="glass edge pad" id="formClave" novalidate style="max-width:460px">
+        <div class="field"><label for="ckActual">Clave actual</label><input id="ckActual" type="password" autocomplete="current-password"></div>
+        <div class="field"><label for="ckNueva">Nueva clave</label><input id="ckNueva" type="password" autocomplete="new-password" placeholder="Mín. 6 caracteres"></div>
+        <div class="field"><label for="ckRep">Repite la nueva clave</label><input id="ckRep" type="password" autocomplete="new-password"></div>
+        <button class="btn primary" type="submit" id="btnClave">Actualizar clave</button>
+      </form>
+    </div>
+  </main>
+</section>
+
+<!-- ================= MODAL PIN ================= -->
+<div class="overlay hidden" id="pinOverlay">
+  <div class="glass edge modal" role="dialog" aria-modal="true" aria-labelledby="pinTitulo">
+    <div class="eyebrow">Autorización</div>
+    <h3 id="pinTitulo">Ingresa tu PIN</h3>
+    <p id="pinSub">Retiro de $0</p>
+    <div class="dots" id="pinDots"><i></i><i></i><i></i><i></i></div>
+    <div class="keypad" id="keypad"></div>
+    <div class="actions">
+      <button class="btn" id="pinCancel" type="button">Cancelar</button>
+      <button class="btn primary" id="pinOk" type="button" disabled>Retirar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+const API='/api/parcial';
+const COP=new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
+const $=id=>document.getElementById(id);
+const money=n=>COP.format(n||0).replace(/\s/g,'');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let token=null, perfil=null, estado=null, pin='', pinBusy=false, montoPendiente=0;
+
+/* ---------- toasts ---------- */
+function toast(titulo,msg,tipo){
+  const t=document.createElement('div');t.className='toast '+(tipo||'');
+  t.innerHTML='<div><b>'+esc(titulo)+'</b>'+esc(msg||'')+'</div>';
+  $('toasts').appendChild(t);
+  setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),320)},4800);
+}
+
+/* ---------- http ---------- */
+async function api(method,path,body){
+  const h={'Content-Type':'application/json'};
+  if(token)h['Authorization']='Bearer '+token;
+  let res;
+  try{res=await fetch(API+path,{method,headers:h,body:body?JSON.stringify(body):undefined});}
+  catch(e){const err=new Error('No se pudo conectar con el servidor. Verifica que esté en el puerto 8081.');err.codigo='RED';throw err;}
+  if(res.status===204)return null;
+  let data=null;try{data=await res.json();}catch(e){}
+  if(!res.ok){
+    const err=new Error((data&&data.mensaje)||'Error inesperado ('+res.status+').');
+    err.codigo=(data&&data.codigo)||'ERROR';err.estado=res.status;
+    if(res.status===401&&(err.codigo==='SESION_INVALIDA'||err.codigo==='SIN_SESION')){cerrar(true);}
+    throw err;
+  }
+  return data;
+}
+function busy(btn,on,txt){if(on){btn.dataset.t=btn.textContent;btn.textContent=txt||'Procesando…';btn.disabled=true}else{btn.textContent=btn.dataset.t||btn.textContent;btn.disabled=false}}
+
+/* ---------- auth ---------- */
+function setAuthTab(login){
+  $('tabLogin').classList.toggle('on',login);$('tabReg').classList.toggle('on',!login);
+  $('formLogin').classList.toggle('hidden',!login);$('formReg').classList.toggle('hidden',login);
+}
+$('tabLogin').onclick=()=>setAuthTab(true);$('tabReg').onclick=()=>setAuthTab(false);
+
+$('formLogin').addEventListener('submit',async e=>{
+  e.preventDefault();const b=$('btnLogin');busy(b,true,'Ingresando…');
+  try{const r=await api('POST','/login',{correo:$('lgCorreo').value,clave:$('lgClave').value});entrar(r);}
+  catch(err){toast('No pudimos ingresarte',err.message,'err')}
+  finally{busy(b,false)}
+});
+$('formReg').addEventListener('submit',async e=>{
+  e.preventDefault();const b=$('btnReg');busy(b,true,'Creando cuenta…');
+  try{
+    const r=await api('POST','/registro',{nombre:$('rgNombre').value,correo:$('rgCorreo').value,telefono:$('rgTel').value,direccion:$('rgDir').value,clave:$('rgClave').value,pin:$('rgPin').value});
+    entrar(r);toast('Cuenta creada','Tu saldo inicial es de $2.000.000 COP.','ok');
+  }catch(err){toast('Revisa tus datos',err.message,'err')}
+  finally{busy(b,false)}
+});
+$('rgPin').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,4)});
+
+function entrar(r){
+  token=r.token;perfil=r.perfil;
+  try{sessionStorage.setItem('parcial_token',token)}catch(e){}
+  $('auth').classList.add('hidden');$('app').classList.remove('hidden');
+  pintarPerfil();irA('resumen');refrescar();
+}
+function cerrar(silencioso){
+  const t=token;token=null;perfil=null;estado=null;
+  try{sessionStorage.removeItem('parcial_token')}catch(e){}
+  if(t&&!silencioso){fetch(API+'/logout',{method:'POST',headers:{Authorization:'Bearer '+t}}).catch(()=>{})}
+  $('app').classList.add('hidden');$('auth').classList.remove('hidden');
+  ['lgClave','ckActual','ckNueva','ckRep'].forEach(i=>$(i).value='');
+  setAuthTab(true);
+  if(silencioso)toast('Sesión finalizada','Vuelve a iniciar sesión para continuar.');
+}
+$('btnLogout').onclick=()=>cerrar();$('btnLogoutM').onclick=()=>cerrar();
+
+/* ---------- navegacion ---------- */
+function irA(tab){
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+tab));
+  if(tab==='movimientos')cargarMovimientos();
+  if(tab==='resumen')refrescar();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>irA(b.dataset.tab));
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>irA(b.dataset.go));
+
+/* ---------- datos ---------- */
+function pintarPerfil(){
+  if(!perfil)return;
+  const primer=(perfil.nombre||'').split(' ')[0];
+  $('saludo').textContent='Hola, '+primer;
+  $('sbNombre').textContent=perfil.nombre;$('sbCorreo').textContent=perfil.correo;
+  $('nroCuenta').textContent='•••• '+String(perfil.id).padStart(4,'0');
+  $('pfNombre').value=perfil.nombre;$('pfCorreo').value=perfil.correo;$('pfTel').value=perfil.telefono;$('pfDir').value=perfil.direccion;
+}
+function pintarSaldo(){
+  if(!estado)return;
+  $('saldoBig').innerHTML=esc(money(estado.saldo))+'<small>COP</small>';
+  $('kvRet').textContent=money(estado.retiradoHoy);$('kvDisp').textContent=money(estado.disponibleHoy);$('kvTope').textContent=money(estado.topeDiario);
+  const pct=Math.min(100,Math.round(estado.retiradoHoy/estado.topeDiario*100));
+  $('meterFill').style.width=pct+'%';$('meter').classList.toggle('warn',pct>=80);
+}
+async function refrescar(){
+  try{estado=await api('GET','/cuenta/saldo');pintarSaldo();
+    const m=await api('GET','/cuenta/movimientos');$('recientes').innerHTML=renderMov(m.slice(0,5));}
+  catch(err){if(err.codigo==='RED')toast('Sin conexión',err.message,'err')}
+}
+function iconoMov(t){return t==='DEPOSITO'?'<svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>':'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>'}
+function renderMov(lista){
+  if(!lista.length)return '<div class="empty">Aún no hay movimientos. Tu primera operación aparecerá aquí.</div>';
+  return lista.map(m=>{
+    const dep=m.tipo==='DEPOSITO';const f=new Date(m.fecha);
+    const fecha=f.toLocaleDateString('es-CO',{day:'2-digit',month:'short'})+' · '+f.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+    return '<div class="mov '+(dep?'dep':'ret')+'"><div class="ico">'+iconoMov(m.tipo)+'</div><div class="d"><div>'+esc(m.detalle)+'</div><span>'+esc(fecha)+'</span></div><div class="m"><b>'+(dep?'+':'−')+esc(money(m.monto))+'</b><span>Saldo '+esc(money(m.saldoPosterior))+'</span></div></div>';
+  }).join('');
+}
+async function cargarMovimientos(){
+  $('listaMov').innerHTML='<div class="empty">Cargando…</div>';
+  try{$('listaMov').innerHTML=renderMov(await api('GET','/cuenta/movimientos'))}catch(err){$('listaMov').innerHTML='<div class="empty">'+esc(err.message)+'</div>'}
+}
+
+/* ---------- deposito ---------- */
+function chips(contenedor,valores,input,after){
+  $(contenedor).innerHTML=valores.map(v=>'<button type="button" class="chip" data-v="'+v+'">'+esc(money(v))+'</button>').join('');
+  $(contenedor).querySelectorAll('.chip').forEach(c=>c.onclick=()=>{$(input).value=c.dataset.v;if(after)after()});
+}
+chips('chipsDep',[50000,100000,200000,500000,1000000],'depMonto');
+chips('chipsRet',[50000,100000,200000,500000,1000000],'retMonto',actualizarAtm);
+$('formDep').addEventListener('submit',async e=>{
+  e.preventDefault();const b=$('btnDep');const monto=parseInt($('depMonto').value,10);
+  if(!monto||monto<=0){toast('Monto inválido','Ingresa un valor mayor a cero.','err');return}
+  busy(b,true);
+  try{estado=await api('POST','/cuenta/deposito',{monto});pintarSaldo();$('depMonto').value='';
+    toast('Depósito exitoso','Se acreditaron '+money(monto)+'. Nuevo saldo: '+money(estado.saldo),'ok');}
+  catch(err){toast('Depósito rechazado',err.message,'err')}
+  finally{busy(b,false)}
+});
+
+/* ---------- perfil / clave ---------- */
+$('formPerfil').addEventListener('submit',async e=>{
+  e.preventDefault();const b=$('btnPerfil');busy(b,true,'Guardando…');
+  try{perfil=await api('PUT','/cuenta/datos',{correo:$('pfCorreo').value,telefono:$('pfTel').value,direccion:$('pfDir').value});pintarPerfil();toast('Datos actualizados','Tu información de contacto fue guardada.','ok')}
+  catch(err){toast('No se guardaron los cambios',err.message,'err')}
+  finally{busy(b,false)}
+});
+$('formClave').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if($('ckNueva').value!==$('ckRep').value){toast('Las claves no coinciden','Verifica que la nueva clave sea idéntica en ambos campos.','err');return}
+  const b=$('btnClave');busy(b,true,'Actualizando…');
+  try{await api('PUT','/cuenta/clave',{claveActual:$('ckActual').value,claveNueva:$('ckNueva').value});
+    ['ckActual','ckNueva','ckRep'].forEach(i=>$(i).value='');toast('Clave actualizada','Úsala la próxima vez que inicies sesión.','ok')}
+  catch(err){toast('No se actualizó la clave',err.message,'err')}
+  finally{busy(b,false)}
+});
+
+/* ---------- cajero ---------- */
+function actualizarAtm(){
+  const v=parseInt($('retMonto').value,10)||0;
+  $('atmMonto').textContent=money(v);
+  const h=$('atmHint');
+  if(!v)h.textContent='Elige un valor o escríbelo a la derecha.';
+  else if(v<10000)h.textContent='El mínimo de retiro es $10.000.';
+  else if(v%10000)h.textContent='Debe ser múltiplo de $10.000 para poder entregarse exacto.';
+  else h.textContent='Listo para continuar con tu PIN.';
+}
+$('retMonto').addEventListener('input',actualizarAtm);
+
+$('formRet').addEventListener('submit',e=>{
+  e.preventDefault();
+  const v=parseInt($('retMonto').value,10);
+  if(!v){toast('Indica un monto','Escribe cuánto deseas retirar.','err');return}
+  abrirPin(v);
+});
+
+function abrirPin(monto){
+  montoPendiente=monto;pin='';pintarPin();
+  $('pinSub').textContent='Retiro de '+money(monto);
+  $('pinOverlay').classList.remove('hidden');
+}
+function cerrarPin(){$('pinOverlay').classList.add('hidden');pin='';pinBusy=false}
+function pintarPin(){
+  [...$('pinDots').children].forEach((d,i)=>d.classList.toggle('f',i<pin.length));
+  $('pinOk').disabled=pin.length!==4||pinBusy;
+}
+(function(){
+  const k=$('keypad');
+  [1,2,3,4,5,6,7,8,9,'borrar',0,'⌫'].forEach(x=>{
+    const b=document.createElement('button');b.type='button';
+    if(x==='borrar'){b.textContent='LIMPIAR';b.className='ghost';b.onclick=()=>{pin='';pintarPin()}}
+    else if(x==='⌫'){b.textContent='⌫';b.onclick=()=>{pin=pin.slice(0,-1);pintarPin()}}
+    else{b.textContent=x;b.onclick=()=>teclear(String(x))}
+    k.appendChild(b);
+  });
+})();
+function teclear(d){if(pin.length<4&&!pinBusy){pin+=d;pintarPin()}}
+document.addEventListener('keydown',e=>{
+  if($('pinOverlay').classList.contains('hidden'))return;
+  if(/^\d$/.test(e.key))teclear(e.key);
+  else if(e.key==='Backspace'){pin=pin.slice(0,-1);pintarPin()}
+  else if(e.key==='Enter'&&pin.length===4)confirmarRetiro();
+  else if(e.key==='Escape')cerrarPin();
+});
+$('pinCancel').onclick=cerrarPin;
+$('pinOk').onclick=confirmarRetiro;
+$('pinOverlay').addEventListener('click',e=>{if(e.target===$('pinOverlay'))cerrarPin()});
+
+async function confirmarRetiro(){
+  if(pin.length!==4||pinBusy)return;
+  pinBusy=true;$('pinOk').disabled=true;$('pinOk').textContent='Procesando…';
+  const pinEnviado=pin,monto=montoPendiente;
+  try{
+    const r=await api('POST','/cuenta/retiro',{monto,pin:pinEnviado});
+    cerrarPin();$('pinOk').textContent='Retirar';
+    mostrarBilletes(r);
+    estado={saldo:r.saldoNuevo,retiradoHoy:r.retiradoHoy,disponibleHoy:r.disponibleHoy,topeDiario:estado?estado.topeDiario:1000000};pintarSaldo();
+    toast('Retiro autorizado','Recoge tus '+r.totalBilletes+' billetes en la bandeja.','ok');
+    $('retMonto').value='';actualizarAtm();
+  }catch(err){
+    $('pinOk').textContent='Retirar';pinBusy=false;
+    if(err.codigo==='PIN_INCORRECTO'||err.codigo==='PIN_FORMATO'){
+      pin='';pintarPin();const d=$('pinDots');d.classList.remove('err');void d.offsetWidth;d.classList.add('err');
+      toast('PIN incorrecto',err.message,'err');
+    }else{
+      cerrarPin();mostrarRechazo(err);toast('Retiro denegado',err.message,'err');
+    }
+  }
+}
+function mostrarRechazo(err){
+  $('atmSlot').classList.remove('active');
+  $('atmTray').innerHTML='<div class="reason"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg><div><strong>Transacción denegada</strong>'+esc(err.message)+'</div></div>';
+}
+function mostrarBilletes(r){
+  const slot=$('atmSlot');slot.classList.add('active');setTimeout(()=>slot.classList.remove('active'),2600);
+  const clase={100000:'b100',50000:'b50',20000:'b20',10000:'b10'};
+  let delay=0;
+  const filas=Object.entries(r.desglose).sort((a,b)=>b[0]-a[0]).map(([den,cant],idx)=>{
+    den=Number(den);
+    const visibles=Math.min(cant,8),paso=Math.min(18,Math.max(8,150/visibles));
+    const ancho=150+(visibles-1)*paso;
+    let billetes='';
+    for(let i=0;i<visibles;i++){
+      const rot=((i%3)-1)*1.4;delay+=0.09;
+      billetes+='<div class="bill '+clase[den]+'" style="left:'+(i*paso)+'px;z-index:'+i+';--rot:'+rot+'deg;animation-delay:'+delay.toFixed(2)+'s"><span class="v">'+esc(money(den))+'</span><span class="c">COP<br>Parcial</span></div>';
+    }
+    return '<div class="denom-row" style="animation-delay:'+(idx*0.15)+'s"><div class="fan" style="width:'+ancho+'px">'+billetes+'</div><div class="denom-info"><b>× '+cant+'</b><span>billetes de '+esc(money(den))+'</span></div></div>';
+  }).join('');
+  $('atmTray').innerHTML='<div class="denoms">'+filas+'</div>'+
+    '<div class="dispense-total"><span>Total entregado · '+r.totalBilletes+' billetes</span><b>'+esc(money(r.monto))+'</b></div>'+
+    '<div class="kv"><span>Saldo restante</span><b>'+esc(money(r.saldoNuevo))+'</b></div>'+
+    '<div class="kv"><span>Disponible para retirar hoy</span><b>'+esc(money(r.disponibleHoy))+'</b></div>';
+}
+
+/* ---------- arranque: restaurar sesion ---------- */
+(async function init(){
+  let t=null;try{t=sessionStorage.getItem('parcial_token')}catch(e){}
+  if(!t)return;
+  token=t;
+  try{perfil=await api('GET','/cuenta/perfil');
+    $('auth').classList.add('hidden');$('app').classList.remove('hidden');pintarPerfil();refrescar();}
+  catch(e){token=null}
+})();
+})();
+</script>
+</body>
+</html>
